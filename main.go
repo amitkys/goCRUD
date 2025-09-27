@@ -26,12 +26,6 @@ func main() {
 
   // get all todo
   app.Get("/api/getall", func(c fiber.Ctx) error {
-    if len(todos) == 0 {
-      return c.Status(200).JSON(fiber.Map{
-        "message": "Todo is empty right now",
-      })
-    }
-
     return c.Status(200).JSON(todos)
   })
 
@@ -54,11 +48,12 @@ func main() {
     // append value of todo into 
     todos = append(todos, *todo)
 
-    return c.Status(201).JSON(todos)
+    return c.Status(201).JSON(fiber.Map{
+      "message": "todo created successfully",
+      "new todo": todo,
+    })
 
   })
-
-  app.Delete("/")
 
   // update todo
   app.Patch("/api/todo/:id", func(c fiber.Ctx) error {
@@ -73,6 +68,25 @@ func main() {
 
     return c.Status(400).JSON(fiber.Map{"error": "todo not found"})
   })
+
+  // delete todo
+  app.Delete("/api/todo/:id", func(c fiber.Ctx) error {
+    id := c.Params("id")
+    
+    for i, todo := range todos {
+      if fmt.Sprint(todo.Id) == id {
+        todos = append(todos[:i], todos[i+1:]...)
+        return c.Status(200).JSON(fiber.Map{
+          "message": "todo deleted",
+          "id": id,
+        })    
+      }
+    }
+
+    return c.Status(400).JSON(fiber.Map{
+      "message": "todo not found",
+    })
+  }) 
 
   log.Fatal(app.Listen(":3000"))
 
