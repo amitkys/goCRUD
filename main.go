@@ -58,6 +58,8 @@ func main() {
 
   })
 
+  app.Delete("/")
+
   // update todo
   app.Patch("/api/todo/:id", func(c fiber.Ctx) error {
     id := c.Params("id")
