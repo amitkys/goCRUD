@@ -24,7 +24,8 @@ func main() {
     return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Hello world"})
   })
 
-  app.Post("/api/todos", func(c fiber.Ctx) error {
+  // create todo
+  app.Post("/api/todo", func(c fiber.Ctx) error {
     // get address of Todo struct litreal into 'todo' variable
     todo := new(Todo) 
 
@@ -46,6 +47,19 @@ func main() {
 
   })
 
+  // update todo
+  app.Patch("/api/todo/:id", func(c fiber.Ctx) error {
+    id := c.Params("id")
+
+    for i, todo := range todos {
+      if fmt.Sprint(todo.Id) == id {
+        todos[i].IsCompleted = true
+        return c.Status(200).JSON(todos[i])
+      }
+    }
+
+    return c.Status(400).JSON(fiber.Map{"error": "todo not found"})
+  })
 
   log.Fatal(app.Listen(":3000"))
 
