@@ -43,14 +43,22 @@ func main() {
     }
   }()
 
-  coll = client.Database("crud_go").Collection("todo")
+	// Sends a ping to confirm a successful connection
+  err = client.Ping(context.TODO(), nil)
 
-	fmt.Println("Successfully connected to MongoDB")
+  if err != nil {
+    panic(err)
+  }
+
+  fmt.Println("connected to db")
+
+  coll = client.Database("go_crud").Collection("todos")
+
 
   app := fiber.New()
 
-  app.Get("/api/todos", getTodo)
-  // app.Post("/api/todos", addTodo)
+  // app.Get("/api/todos", getTodo)
+  app.Post("/api/todos", addTodo)
   // app.Patch("/api/todos/:id", updateTodo)
   // app.Delete("/api/todos", deleteTodo)
 
@@ -59,7 +67,20 @@ func main() {
   log.Fatal(app.Listen(":"+port))
 }
 
-func getTodo(c fiber.Ctx) error {
-  
+func addTodo(c fiber.Ctx) error {
+  todo := new(Todo)
+
+  if err := c.Bind().Body(todo); err != nil {
+    c.Status(400).JSON(fiber.Map{
+      "message": "failed to parse",
+    })
+  }
+
+  result, err := coll.InsertOne(context.TODO(), todo)
+  if err != nil {
+    panic(err)
+  }
+
+  return c.Status(200).JSON(result)
 }
 
