@@ -24,6 +24,17 @@ func main() {
     return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Hello world"})
   })
 
+  // get all todo
+  app.Get("/api/getall", func(c fiber.Ctx) error {
+    if len(todos) == 0 {
+      return c.Status(200).JSON(fiber.Map{
+        "message": "Todo is empty right now",
+      })
+    }
+
+    return c.Status(200).JSON(todos)
+  })
+
   // create todo
   app.Post("/api/todo", func(c fiber.Ctx) error {
     // get address of Todo struct litreal into 'todo' variable
