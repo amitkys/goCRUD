@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -12,25 +13,36 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
-  if err != nil {
-    log.Fatal("error loading .env file")
-  }
+	// Load environment variables
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-  DB_URL := os.Getenv("DB_URL")
-  clientOption := options.Client().ApplyURI(DB_URL)
-  client, err := mongo.Connect(clientOption)
+	dbURL := os.Getenv("DB_URL")
+	if dbURL == "" {
+		log.Fatal("DB_URL is not set in .env")
+	}
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	// Create a context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-  err = client.Ping(context.Background(), nil)
+	// Connect to MongoDB
+	clientOpts := options.Client().ApplyURI(dbURL)
+	client, err := mongo.Connect(clientOpts)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			log.Fatalf("Error disconnecting from MongoDB: %v", err)
+		}
+	}()
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	// Ping the database
+	if err := client.Ping(ctx, nil); err != nil {
+		log.Fatalf("Could not ping MongoDB: %v", err)
+	}
 
-  fmt.Println("connected to db")
-
+	fmt.Println("Successfully connected to MongoDB")
 }
