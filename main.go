@@ -62,7 +62,7 @@ func main() {
   app.Get("/api/todos", getTodo)
   app.Post("/api/todos", addTodo)
   app.Patch("/api/todos/:id", updateTodo)
-  // app.Delete("/api/todos", deleteTodo)
+  app.Delete("/api/todos/:id", deleteTodo)
 
   port := os.Getenv("PORT")
 
@@ -129,3 +129,10 @@ func updateTodo(c fiber.Ctx) error {
   return c.SendStatus(200)
 }
 
+func deleteTodo(c fiber.Ctx) error {
+  id := c.Params("id")
+
+
+  coll.DeleteOne(context.TODO(), bson.M{"_id": id})
+  return c.SendStatus(200)
+}
