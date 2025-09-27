@@ -61,7 +61,7 @@ func main() {
 
   app.Get("/api/todos", getTodo)
   app.Post("/api/todos", addTodo)
-  // app.Patch("/api/todos/:id", updateTodo)
+  app.Patch("/api/todos/:id", updateTodo)
   // app.Delete("/api/todos", deleteTodo)
 
   port := os.Getenv("PORT")
@@ -117,5 +117,15 @@ func getTodo(c fiber.Ctx) error {
 
   // Fiber automatically marshals the Go struct slice to a JSON array
   return c.JSON(todos)
+}
+
+func updateTodo(c fiber.Ctx) error {
+  id := c.Params("id")
+  updateDoc := bson.M{
+		"$set": bson.M{"isCompleted": true},
+	}
+  coll.UpdateByID(context.TODO(), id, updateDoc)
+
+  return c.SendStatus(200)
 }
 
